@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:assist_agro/core/util/app_colors.dart';
 import 'package:assist_agro/core/util/app_fonts.dart';
 import 'package:assist_agro/core/widgets/app_text_fild.dart';
@@ -13,6 +15,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  Stream<bool> get showPass => _showPassController.stream;
+  final _showPassController = StreamController<bool>();
   @override
   void initState() {
     super.initState();
@@ -20,6 +24,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
+    _showPassController.close();
     super.dispose();
   }
 
@@ -57,27 +62,42 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.fromLTRB(8, 12, 8, 4),
                     child: AppTextFild(labelText: 'Usuário'),
                   ),
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 8),
-                        child: AppTextFild(
-                          labelText: 'Senha',
-                          onChanged: (d) {},
-                          obscureText: false,
-                        ),
-                      ),
-                      CheckBox1(
-                        value: false,
-                        onChanged: (_) {},
-                      ),
-                    ],
-                  ),
+                  StreamBuilder<bool>(
+                      stream: showPass,
+                      initialData: false,
+                      builder: (context, snapshot) {
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 4, horizontal: 8),
+                              child: AppTextFild(
+                                labelText: 'Senha',
+                                onChanged: (_) {},
+                                obscureText: !(snapshot.data as bool),
+                              ),
+                            ),
+                            CheckBox1(
+                              value: (snapshot.data as bool),
+                              onChanged: (_) {
+                                _showPassController.sink
+                                    .add(!(snapshot.data as bool));
+                              },
+                            ),
+                          ],
+                        );
+                      }),
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: Center(
-                        child: Button1(onPressed: () {}, child: Text('Logar'))),
+                        child: Button1(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => LoginPage()));
+                            },
+                            child: Text('Logar'))),
                   ),
                 ],
               ),
